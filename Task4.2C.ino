@@ -1,4 +1,4 @@
-Code:
+// Code:
 
 const int buttonPin = 2;   // Push button input
 const int trigPin   = 6;   // Ultrasonic TRIG
