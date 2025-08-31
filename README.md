@@ -87,6 +87,13 @@ All event handling (button and sensor signals) is done via **interrupts**.
 
 ---
 
+## 💻 Serial Monitor 
+- System Ready - Waiting for interrupts...
+- Button interrupt: LED1 toggled
+- Ultrasonic: Object detected, LED2 ON
+
+---
+
 ## 🎯 Learning Outcomes
 By completing this task, you will:  
 - Understand how to configure and use **attachInterrupt()** on the Nano 33 IoT.  
