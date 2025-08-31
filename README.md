@@ -31,7 +31,6 @@ We are using:
 ### Push Button
 - One leg → Pin D2  
 - Other leg → GND  
-- Use pull-down resistor for stable input  
 
 ### Ultrasonic Sensor
 - VCC → 3.3V  
