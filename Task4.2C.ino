@@ -9,12 +9,25 @@ const int led2Pin   = 9;   // LED2 (ultrasonic)
 
 // ------------------- Global State -------------------
 volatile bool led1State = LOW;   // Stores LED1 toggle state
+volatile unsigned long startTime = 0;
+volatile unsigned long echoDuration = 0;
+volatile bool measureComplete = false;
 
 // ------------------- ISR: Button -------------------
 void buttonISR() {
   led1State = !led1State;
   digitalWrite(led1Pin, led1State);
   Serial.println("Button interrupt: LED1 toggled");
+}
+
+// ------------------- ISR: Ultrasonic Echo -------------------
+void echoISR() {
+  if (digitalRead(echoPin) == HIGH) {
+    startTime = micros();   // record rising edge time
+  } else {
+    echoDuration = micros() - startTime; // record pulse width
+    measureComplete = true;
+  }
 }
 
 // ------------------- Pin Setup -------------------
@@ -31,19 +44,25 @@ void setupPins() {
 // ------------------- Interrupt Setup -------------------
 void setupInterrupts() {
   attachInterrupt(digitalPinToInterrupt(buttonPin), buttonISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(echoPin), echoISR, CHANGE);
 }
 
 // ------------------- Ultrasonic Measurement -------------------
 long measureDistance() {
+  // Trigger pulse
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-  long duration = pulseIn(echoPin, HIGH, 30000);  // microseconds
-  long distance = duration * 0.034 / 2;           // convert to cm
-  return distance;
+  // Wait for ISR to complete one echo measurement
+  if (measureComplete) {
+    measureComplete = false;
+    long distance = echoDuration * 0.034 / 2;  // convert to cm
+    return distance;
+  }
+  return -1;  // no valid reading yet
 }
 
 // ------------------- Setup -------------------
@@ -61,8 +80,9 @@ void loop() {
 
   if (distance > 0 && distance < 50) {   
     digitalWrite(led2Pin, HIGH);
+    digitalWrite(led1Pin, LOW); // optional: turn off LED1 if object close
     Serial.println("Ultrasonic: Object detected, LED2 ON");
-  } else {
+  } else if (distance > 0) {
     digitalWrite(led2Pin, LOW);
   }
 
